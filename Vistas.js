@@ -1,5 +1,7 @@
 import {Carro} from "./Carritio.js";
 import {Producto} from "./Producto.js";
+import {Usuario} from "./usuario.js";
+import {ColeccionUsuarios} from "./ColeccionUsuarios.js";
 
 class Vistas{
 
@@ -19,8 +21,175 @@ class Vistas{
             }
       }
 
+
+      //cambio de vistas
       vistaPrincipal(){
             this.main.html("");
+            this.crearVistaPrincipal();
+            this.main.append(this.vista);
+            this.ejecutarCarrusel();
+      }
+
+      vistaHombre(){
+            this.tipo = "hombre";
+            this.crearVista();
+            this.clickProducto();
+      }
+
+      vistaMujer(){
+            this.tipo = "mujer";
+            this.crearVista();
+      }
+
+      vistaJoyas(){
+            this.tipo = "joyas";
+            this.crearVista();
+      }
+
+      vistaElectronica(){
+            this.tipo = "electronica";
+            this.crearVista();
+      }
+
+      vistaCarrito(){
+            this.main.html("");
+            this.crearVistaCarrito();
+            this.main.append(this.vista);
+            this.restarCantidad();
+            this.sumarCantidad();
+            this.eliminarProducto();
+            this.borrarCarrito();
+      }
+
+      vistaLogin(){
+            this.main.html("");
+            this.crearVistaLogin();
+            this.main.append(this.vista);
+      }
+
+      vistaCargando(){
+            this.main.html("");
+            this.vista = `<div class="contenedor-gift"><img class="gift" src= "https://acegif.com/wp-content/uploads/loading-13.gif"></div>`;
+            this.main.append(this.vista);
+      }
+
+
+      //eventos
+      clickProducto(){
+            $(".producto").find(".ver").click((e) => {
+                  let id = e.currentTarget.previousElementSibling.value;
+                  this.lanzarPeticion("id",id);
+            })
+            $(".producto").find(".imagen-producto").click((e) => {
+                  let id = e.currentTarget.parentElement.nextElementSibling.lastElementChild.previousElementSibling.value;
+                  this.lanzarPeticion("id",id);
+            })
+      }
+
+      hoverProducto(){
+            $(".producto").mouseover(function (e){
+                  $(".producto").css("opacity","0.5");
+                  e.currentTarget.style.opacity = 1;
+            })
+            $(".producto").mouseout(function (e){
+                  $(".producto").css("opacity","1");
+            })
+      }
+
+      añadirAlCarrito(producto){
+            $(".comprar").click((e) => {
+                  let talla = e.currentTarget.previousElementSibling.lastElementChild.lastElementChild.lastElementChild.value;
+                  let cantidad = e.currentTarget.previousElementSibling.lastElementChild.firstElementChild.lastElementChild.value;
+                  let producto_copia = new Producto(producto.id,producto.nombre,producto.imagen,producto.categoria,producto.descripcion,producto.precio,producto.votos,producto.rating)
+                  producto_copia.talla = talla;
+                  producto_copia.cantidad = parseFloat(cantidad);
+                  this.carrito.añadirProducto(producto_copia);
+            })
+      }
+
+      convertirProducto(lista_producto){
+            let carro = [];
+            this.carrito = new Carro(carro);
+            for(let element of lista_producto){
+                  let producto = new Producto(element.id,element.nombre,element.imagen,element.categoria,element.descripcion,element.precio,element.votos,element.rating,element.cantidad,element.talla);
+                  this.carrito.carrito.push(producto);
+            }
+      }
+
+      restarCantidad(){
+            $(".cantidad-producto-carrito-menos").click((e) => {
+                  this.carrito.añadirProducto(this.crearProductoIdTalla(e),"-");
+                  this.vistaCarrito();
+            })
+      }
+
+      sumarCantidad(){
+            $(".cantidad-producto-carrito-mas").click((e) => {
+                  this.carrito.añadirProducto(this.crearProductoIdTalla(e),"+");
+                  this.vistaCarrito();
+            })
+      }
+
+      eliminarProducto(){
+            $(".imagen-eliminar").click((e) => {
+                  let id = e.currentTarget.parentElement.parentElement.previousElementSibling.previousElementSibling.value;
+                  let talla = e.currentTarget.parentElement.parentElement.previousElementSibling.previousElementSibling.previousElementSibling.value;
+                  let producto = new Producto(id);
+                  producto.talla = talla;
+                  this.carrito.eliminarProducto(producto);
+                  this.vistaCarrito();
+            })
+      }
+
+      borrarCarrito(){
+            $(".borrar-carrito").click((e) => {
+                  this.carrito.borrarCarrito()
+                  this.vistaCarrito();
+            })
+      }
+
+      crearProductoIdTalla(e){
+            let id = e.currentTarget.parentElement.previousElementSibling.previousElementSibling.value;
+            let talla = e.currentTarget.parentElement.previousElementSibling.previousElementSibling.previousElementSibling.value;
+            let producto = new Producto(id);
+            producto.talla = talla;
+            return producto
+      }
+
+      //carrusel
+      ejecutarCarrusel(){
+            const lista_img = [
+                  "https://www.instyle.es/medio/2019/03/22/zara-portada_55b4b3ae_1200x630.jpg",
+                  "https://media.revistavanityfair.es/photos/60e8369d46da3cf1bc9f9bf7/master/w_1600%2Cc_limit/208556.jpg",
+                  "https://images.ecestaticos.com/hkJCvxY4z_UQEaN2U4Zw4CUjjk0=/0x0:2131x1598/1200x899/filters:fill(white):format(jpg)/f.elconfidencial.com%2Foriginal%2Fd69%2Ff44%2Fa64%2Fd69f44a64fde34ce0649915abe0b0326.jpg",
+                  "https://s.yimg.com/ny/api/res/1.2/b9PUgBC92ASvKCO2s1RDcw--/YXBwaWQ9aGlnaGxhbmRlcjt3PTY0MDtoPTMyMQ--/https://media.zenfs.com/es/esquire_spain_51/246d71b92c6b41bf858bad9484fd2827",
+            ]
+            let img = document.getElementById("imagen-carrusel");
+            let actual = 0;
+      
+            playIntervalo();
+      
+            function pasarFoto() {
+                  if(actual >= lista_img.length - 1) {
+                  actual = 0;
+                  } else {
+                  actual++;
+                  }
+                  renderizarImagen();
+            }
+      
+            function renderizarImagen () {
+                  img.src = lista_img[actual]
+            }
+      
+            function playIntervalo() {
+                  setInterval(pasarFoto, 2000);
+            }
+      }
+
+
+      //creacion de vistas
+      crearVistaPrincipal(){
             this.vista = $(`
             <section class='vistas principal'>
 
@@ -79,123 +248,6 @@ class Vistas{
                   </section>
             </section>
             `)
-      this.main.append(this.vista);
-      this.ejecutarCarrusel();
-      }
-
-      vistaHombre(){
-            this.tipo = "hombre";
-            this.crearVista();
-            this.añadirEventoClickProducto();
-      }
-
-      vistaMujer(){
-            this.tipo = "mujer";
-            this.crearVista();
-      }
-
-      vistaJoyas(){
-            this.tipo = "joyas";
-            this.crearVista();
-      }
-
-      vistaElectronica(){
-            this.tipo = "electronica";
-            this.crearVista();
-      }
-
-      vistaCarrito(){
-
-      }
-
-      vistaProducto(producto){
-            this.vista = `
-            <div class="contenedor-producto">
-                  <section class="producto-unico">
-                        <h1 class="nombre-producto-unico titulo-producto">${producto.nombre}</h1>
-                        <div class="contenendor-imagen-producto-unico">
-                              <img class="imagen-producto-unico" src="${producto.imagen}">
-                        </div>
-                        <h3 class="categoria-producto-unico">${producto.categoria}</h3>
-                        <p class="descripcion-producto-unico">${producto.descripcion}</p>
-                        <p class="precio-producto-unico">${producto.precio}</p>
-                        <div class="rating-producto-unico">${producto.votos}${producto.rating}</div>
-                        <div class="caracteristicas-producto-unico">
-                              <div class="contenendor-cantidad-producto-unico">
-                                    <span>Cantidad: </span>
-                                    <select class="cantidad-producto-unico" name="cantidad">
-                                          <option value="1">1</option>
-                                          <option value="2">2</option>
-                                          <option value="3">3</option>
-                                          <option value="4">4</option>
-                                          <option value="5">5</option>
-                                    </select>
-                              </div>
-                              <div class="contenendor-talla-producto-unico">
-                                    <span>Talla: </span>
-                                    <select class="talla-producto-unico" name="talla">
-                                          <option value="xs">XS</option>
-                                          <option value="s">S</option>
-                                          <option value="m">M</option>
-                                          <option value="l">L</option>
-                                          <option value="xl">XL</option>
-                                    </select>
-                              </div>
-                        </div>
-                  </section>
-                  <button class="comprar">Enviar al carrito</button>
-            </div>
-      `
-      }
-
-      vistaLogin(){
-
-      }
-
-      vistaCargando(){
-            this.main.html("");
-            this.vista = `<div class="contenedor-gift"><img class="gift" src= "https://acegif.com/wp-content/uploads/loading-13.gif"></div>`;
-            this.main.append(this.vista);
-      }
-
-      añadirEventoClickProducto(){
-            $(".producto").find(".ver").click((e) => {
-                  let id = e.currentTarget.previousElementSibling.value;
-                  this.lanzarPeticion("id",id);
-            })
-            $(".producto").find(".imagen-producto").click((e) => {
-                  let id = e.currentTarget.parentElement.nextElementSibling.lastElementChild.previousElementSibling.value;
-                  this.lanzarPeticion("id",id);
-            })
-      }
-
-      eventoHoverProducto(){
-            $(".producto").mouseover(function (e){
-                  $(".producto").css("opacity","0.5");
-                  e.currentTarget.style.opacity = 1;
-            })
-            $(".producto").mouseout(function (e){
-                  $(".producto").css("opacity","1");
-            })
-      }
-
-      añadirEventoClickComprar(producto){
-            $(".comprar").click((e) => {
-                  let talla = e.currentTarget.previousElementSibling.lastElementChild.lastElementChild.lastElementChild.value;
-                  let cantidad = e.currentTarget.previousElementSibling.lastElementChild.firstElementChild.lastElementChild.value;
-                  producto.talla = talla;
-                  producto.cantidad = parseFloat(cantidad);
-                  this.carrito.añadirProducto(producto);
-            })
-      }
-
-      convertirProducto(lista_producto){
-            let carro = [];
-            this.carrito = new Carro(carro);
-            for(let element of lista_producto){
-                  let producto = new Producto(element.id,element.nombre,element.imagen,element.categoria,element.descripcion,element.precio,element.votos,element.rating,element.cantidad,element.talla);
-                  this.carrito.carrito.push(producto);
-            }
       }
 
       crearVista(){
@@ -241,6 +293,115 @@ class Vistas{
             </div>`;
       }
 
+      crearVistaProducto(producto){
+            this.vista = `
+            <div class="contenedor-producto">
+                  <section class="producto-unico">
+                        <h1 class="nombre-producto-unico titulo">${producto.nombre}</h1>
+                        <div class="contenendor-imagen-producto-unico">
+                              <img class="imagen-producto-unico" src="${producto.imagen}">
+                        </div>
+                        <h3 class="categoria-producto-unico">${producto.categoria}</h3>
+                        <p class="descripcion-producto-unico">${producto.descripcion}</p>
+                        <p class="precio-producto-unico">${producto.precio}</p>
+                        <div class="rating-producto-unico">${producto.votos}${producto.rating}</div>
+                        <div class="caracteristicas-producto-unico">
+                              <div class="contenendor-cantidad-producto-unico">
+                                    <span>Cantidad: </span>
+                                    <select class="cantidad-producto-unico" name="cantidad">
+                                          <option value="1">1</option>
+                                          <option value="2">2</option>
+                                          <option value="3">3</option>
+                                          <option value="4">4</option>
+                                          <option value="5">5</option>
+                                    </select>
+                              </div>
+                              <div class="contenendor-talla-producto-unico">
+                                    <span>Talla: </span>
+                                    <select class="talla-producto-unico" name="talla">
+                                          <option value="xs">XS</option>
+                                          <option value="s">S</option>
+                                          <option value="m">M</option>
+                                          <option value="l">L</option>
+                                          <option value="xl">XL</option>
+                                    </select>
+                              </div>
+                        </div>
+                  </section>
+                  <button class="comprar">Enviar al carrito</button>
+            </div>
+      `
+      }
+
+      crearVistaCarrito(){
+            if(this.carrito.carrito.length != 0){
+                  this.vista = `
+                  <section class="contenedor-carrito">
+                        <div class="carrito-titulo">
+                              <h1>Su Carrito</h1>
+                        </div>
+                        <div class="carrito-contenido">
+                  <section class="contenedor-productos-carrito">
+                  `
+      
+                  for(let element of this.carrito.carrito){
+                        this.vista += 
+                        `
+                        <div class="producto-carrito">
+                              <input type="hidden" class="id-producto-carrito" value="${element.talla}">
+                              <input type="hidden" class="id-producto-carrito" value="${element.id}">
+                              <div class="contenedor-imagen-producto-carrito">
+                                    <img class="imagen-producto-carrito" src="${element.imagen}" alt="${element.nombre}">
+                              </div>
+                              <div class="contenedor-informacion-producto-carrito">
+                                    <h1 class="nombre-producto-carrito titulo">${element.nombre} (${element.talla})</h1>
+                                    <div class="contenedor-imagen-eliminar hover">
+                                          <img class="imagen-eliminar" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Red_X.svg/1024px-Red_X.svg.png" alt="eliminar producto">
+                                    </div>
+                                    <span class="cantidad-producto-carrito-menos">-</span><span class="cantidad-producto-carrito-numero">${element.cantidad}</span><span class="cantidad-producto-carrito-mas">+</span>
+                                    <span class="precio-producto-carrito">${element.precio} €</span>
+                              </div>
+                        </div>
+                        `
+                  }
+      
+                  this.vista +=
+                  `
+                        </section>
+                        <section class="contenedor-informacion-carrito">
+                              <div class="precio-carrito">
+                                    <div class="suma-carrito">
+                                          <section class="subtotal-carrito-contenedor">
+                                                <span class="subtotal">Subtotal</span>
+                                                <span class="euro">${this.carrito.subtotal}€</span>
+                                          </section>
+                                          <section class="gastos-carrito-contenedor">
+                                                <span class="gastos">Gastos</span>
+                                                <span class="euro">${this.carrito.gastos_envio}€</span>
+                                          </section>
+                                    </div>
+                                    <div class="total-carrito-contenedor">
+                                          <span class="total">Total</span>
+                                          <span class="euro">${this.carrito.total}€</span>
+                                    </div>
+                              </div>
+                              <div class="opciones-carrito">
+                                    <button class="finalizar-compra">Finalizar Pedido</button>
+                                    <button class="borrar-carrito">Borrar carrito</button>
+                              </div>
+                        </section>
+                  `
+            }else{
+                  this.vista = `<h1>Tu carrito está vacío</h1>`
+            }
+            
+      }
+
+      crearVistaLogin(){
+            this.vista=`<p>login</p>`
+      }
+
+      //peticiones
       lanzarPeticion(tipo_peticion,url){
             let peticion = "";
             if(tipo_peticion == "categorias"){
@@ -281,8 +442,8 @@ class Vistas{
 
                   //añadimos la vista al html y añadimos el evento del click al boton de ver
                   this.main.append(this.vista);
-                  this.añadirEventoClickProducto();
-                  this.eventoHoverProducto();
+                  this.clickProducto();
+                  this.hoverProducto();
             }else if(this.http.status != 200 && this.http.readyState == 4){
                   console.log("no mi negro");
             }
@@ -299,47 +460,16 @@ class Vistas{
                   this.main.html("");
 
                   //creamos la vista con el prodcuto
-                  this.vistaProducto(producto);
+                  this.crearVistaProducto(producto);
                   
                   //añadimos la vista al html y añadimos el evento del click al boton de ver
                   this.main.append(this.vista);
-                  this.añadirEventoClickComprar(producto);
+                  this.añadirAlCarrito(producto);
             }else if(this.http.status != 200 && this.http.readyState == 4){
                   console.log("no mi negro");
             }else if(this.http.readyState != 4){
                   this.vistaCargando();
             }
-      }
-
-      ejecutarCarrusel(){
-            const lista_img = [
-                  "https://www.instyle.es/medio/2019/03/22/zara-portada_55b4b3ae_1200x630.jpg",
-                  "https://media.revistavanityfair.es/photos/60e8369d46da3cf1bc9f9bf7/master/w_1600%2Cc_limit/208556.jpg",
-                  "https://images.ecestaticos.com/hkJCvxY4z_UQEaN2U4Zw4CUjjk0=/0x0:2131x1598/1200x899/filters:fill(white):format(jpg)/f.elconfidencial.com%2Foriginal%2Fd69%2Ff44%2Fa64%2Fd69f44a64fde34ce0649915abe0b0326.jpg",
-                  "https://s.yimg.com/ny/api/res/1.2/b9PUgBC92ASvKCO2s1RDcw--/YXBwaWQ9aGlnaGxhbmRlcjt3PTY0MDtoPTMyMQ--/https://media.zenfs.com/es/esquire_spain_51/246d71b92c6b41bf858bad9484fd2827",
-            ]
-            let img = document.getElementById("imagen-carrusel");
-            let actual = 0;
-      
-            playIntervalo();
-      
-            function pasarFoto() {
-                  if(actual >= lista_img.length - 1) {
-                  actual = 0;
-                  } else {
-                  actual++;
-                  }
-                  renderizarImagen();
-            }
-      
-            function renderizarImagen () {
-                  img.src = lista_img[actual]
-            }
-      
-            function playIntervalo() {
-                  setInterval(pasarFoto, 2000);
-            }
-      }
-      
+      }    
 }
 export {Vistas}
