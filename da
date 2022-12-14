@@ -1,0 +1,18 @@
+
+
+            .hombre{
+                  /*tamaño*/
+                  width: 80%;
+            
+                  /*disposicion*/
+                  display: grid;
+                  grid-template-columns: 1fr;
+                  grid-template-rows: 20%,80%;
+            }
+            
+            .cabecera{
+                  /*disposicion*/
+                  display: grid;
+                  grid-template-columns: repeat(3,1fr);
+                  grid-template-rows: 1fr;
+            } */
