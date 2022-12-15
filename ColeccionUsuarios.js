@@ -8,6 +8,7 @@ class ColeccionUsuarios{
       añadirUsuario(usuario){
             this.usuarios.push(usuario);
             this.actualizarLocalStorage()
+            return true
       }
 
       actualizarLocalStorage(){

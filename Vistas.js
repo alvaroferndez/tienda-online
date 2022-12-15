@@ -203,20 +203,22 @@ class Vistas{
       registrarUsuario(){
             $("#registrarse").click((e) => {
                   e.preventDefault()
-                  datos_usuario = buscarDatosUsuario();
+                  let datos_usuario = this.buscarDatosUsuario();
                   let usuario = new Usuario(datos_usuario[0],datos_usuario[1],datos_usuario[2],datos_usuario[3],datos_usuario[4],datos_usuario[5]);
-                  this.collecion_usuarios.añadirUsuario(usuario);
+                  if(this.collecion_usuarios.añadirUsuario(usuario)){
+                        //mostrar en la pagina que el registro se ha hecho corectamente
+                  }
             })
       }
 
       buscarDatosUsuario(){
             let resultado = [];
-            resultado.push($(".usuario").value,$(".contraseña").value,$(".nombre").value,$(".apellidos").value$(".correo").value,$(".telefono").value);
+            resultado.push($(".usuario").val(),$(".contraseña").val(),$(".nombre").val(),$(".apellidos").val(),$(".correo").val(),$(".telefono").val());
             return resultado;
       }
 
       iniciarUsuario(){
-            $(".sesion-subc")
+
       }
 
       //carrusel
