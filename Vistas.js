@@ -19,6 +19,14 @@ class Vistas{
                   this.carrito = new Carro(carro);
                   this.carrito.actualizarLocalStorage();
             }
+            if(localStorage.usuarios){
+                  let lista_usuarios = JSON.parse(localStorage.usuarios);
+                  this.convertirUsuarios(lista_usuarios);
+            }else{
+                  let collecion_usuarios = []
+                  this.collecion_usuarios = new ColeccionUsuarios(collecion_usuarios);
+                  this.collecion_usuarios.actualizarLocalStorage();
+            }
       }
 
 
@@ -33,7 +41,6 @@ class Vistas{
       vistaHombre(){
             this.tipo = "hombre";
             this.crearVista();
-            this.clickProducto();
       }
 
       vistaMujer(){
@@ -65,6 +72,10 @@ class Vistas{
             this.main.html("");
             this.crearVistaLogin();
             this.main.append(this.vista);
+            if($(".cambiar-registrarse")){
+                  this.cambiarRegistrarse()
+            }
+            this.iniciarUsuario();
       }
 
       vistaCargando(){
@@ -116,6 +127,15 @@ class Vistas{
             }
       }
 
+      convertirUsuarios(lista_usuarios){
+            let collecion_usuarios = [];
+            this.collecion_usuarios = new ColeccionUsuarios(collecion_usuarios);
+            for(let element of lista_usuarios){
+                  let usuario = new Usuario(element.nombre_usuario,element.contraseña,element.nombre,element.apellidos,element.correo,element.telefono);
+                  this.collecion_usuarios.usuarios.push(usuario);
+            }
+      }
+
       restarCantidad(){
             $(".cantidad-producto-carrito-menos").click((e) => {
                   this.carrito.añadirProducto(this.crearProductoIdTalla(e),"-");
@@ -154,6 +174,49 @@ class Vistas{
             let producto = new Producto(id);
             producto.talla = talla;
             return producto
+      }
+
+      accionarProductos(){
+            this.main.html("");
+            this.crearVista()
+            this.main.append(this.vista);
+            this.clickProducto();
+            this.hoverProducto();
+      }
+
+      ordenarAscendente(){
+            $(".ascendente").click(() => {
+                  this.productos.sort().reverse();
+                  this.accionarProductos();
+                  this.ordenarDescendente();
+            })
+      }
+
+      ordenarDescendente(){
+            $(".descendente").click(() => {
+                  this.productos.sort().reverse();
+                  this.accionarProductos();
+                  this.ordenarAscendente();
+            })
+      }
+
+      registrarUsuario(){
+            $("#registrarse").click((e) => {
+                  e.preventDefault()
+                  datos_usuario = buscarDatosUsuario();
+                  let usuario = new Usuario(datos_usuario[0],datos_usuario[1],datos_usuario[2],datos_usuario[3],datos_usuario[4],datos_usuario[5]);
+                  this.collecion_usuarios.añadirUsuario(usuario);
+            })
+      }
+
+      buscarDatosUsuario(){
+            let resultado = [];
+            resultado.push($(".usuario").value,$(".contraseña").value,$(".nombre").value,$(".apellidos").value$(".correo").value,$(".telefono").value);
+            return resultado;
+      }
+
+      iniciarUsuario(){
+            $(".sesion-subc")
       }
 
       //carrusel
@@ -260,11 +323,8 @@ class Vistas{
                               <!-- titulo -->
                               <h1 class="titulo-seccion">${this.tipo}</h1>
                               <!-- elegir orden -->
-                              <select class="orden">
-                                    <label for="">Ordenar por: </label>
-                                    <option>Acendente</option>
-                                    <option>Descendente</option>
-                              </select>
+                              <span class="ordenar ascendente">Ascendente</span>
+                              <span class="ordenar descendente">Descendente</span>
                         </section>
                         <!-- productos -->
                         <section class='productos'>`;
@@ -398,9 +458,62 @@ class Vistas{
       }
 
       crearVistaLogin(){
-            this.vista=`<p>login</p>`
+            this.vista=
+            `
+            <section class="contenedor-login">
+                  <section class="iniciar">
+                        <h1 class="titulo-inicio titulo">Inicio de sesión</h1>
+                        <form action="">
+                              <input type="text" class="usuario" placeholder="escriba su usuario">
+                              <input type="password" class="contraseña" placeholder="escriba su contraseña">
+                              <input type="submit" class="subcribirse" id="iniciar-sesion">
+                        </form>
+                  </section>
+                  <section class="registrarse">
+                        <div class="cambiar-registrarse">
+                              <h1 class="cambiar hover" >Registrarse</h1>
+                        </div>
+                  </section>
+            </section>
+            `
+      }
+      
+      cambiarRegistrarse(){
+            $(".cambiar-registrarse").click(() => {
+                  this.main.html("");
+                  this.vista=`
+                  <section class="contenedor-login">
+                        <section class="iniciar">
+                              <div class="cambiar-iniciar">
+                                    <h1 class="cambiar hover">Iniciar sesión</h1>
+                              </div>
+                        </section>
+                        <section class="registrarse">
+                              <h1 class="titulo-inicio titulo">Registrarse</h1>
+                              <form action="">
+                                    <input type="text" class="usuario" placeholder="escriba su usuario">
+                                    <input type="text" class="nombre" placeholder="escriba su nombre">
+                                    <input type="text" class="apellidos" placeholder="escriba sus apellidos">
+                                    <input type="tel" class="telefono" placeholder="escriba su telefono">
+                                    <input type="email" class="correo" placeholder="escriba su correo">
+                                    <input type="password" class="contraseña" placeholder="escriba su contraseña">
+                                    <input type="password" class="repetir-contraseña" placeholder="repita su contraseña">
+                                    <input type="submit" class="subcribirse" id="registrarse">
+                              </form>
+                        </section>
+                  </section>
+                  `
+                  this.main.append(this.vista);
+                  this.cambiarIniciar();
+                  this.registrarUsuario();
+            })
       }
 
+      cambiarIniciar(){
+            $(".cambiar-iniciar").click(() => {
+                  this.vistaLogin();
+            })
+      }
       //peticiones
       lanzarPeticion(tipo_peticion,url){
             let peticion = "";
@@ -444,6 +557,7 @@ class Vistas{
                   this.main.append(this.vista);
                   this.clickProducto();
                   this.hoverProducto();
+                  this.ordenarDescendente();
             }else if(this.http.status != 200 && this.http.readyState == 4){
                   console.log("no mi negro");
             }
