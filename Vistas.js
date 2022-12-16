@@ -11,21 +11,19 @@ class Vistas{
             this.http = new XMLHttpRequest();
             this.productos = undefined;
             this.tipo = undefined;
-            if(localStorage.carrito){
-                  let lista_carrito = JSON.parse(localStorage.carrito);
-                  this.convertirProducto(lista_carrito);
-            }else{
-                  let carro = []
-                  this.carrito = new Carro(carro);
-                  this.carrito.actualizarLocalStorage();
-            }
+
             if(localStorage.usuarios){
                   let lista_usuarios = JSON.parse(localStorage.usuarios);
                   this.convertirUsuarios(lista_usuarios);
             }else{
-                  let collecion_usuarios = []
-                  this.collecion_usuarios = new ColeccionUsuarios(collecion_usuarios);
-                  this.collecion_usuarios.actualizarLocalStorage();
+                  let coleccion_usuarios = []
+                  this.coleccion_usuarios = new ColeccionUsuarios(coleccion_usuarios);
+                  this.coleccion_usuarios.actualizarLocalStorage();
+            }
+
+            if(localStorage.usuario_activo){
+                  let datos_usuario_activo = JSON.parse(localStorage.usuario_activo);
+                  this.convertirUsuario(datos_usuario_activo);
             }
       }
 
@@ -52,7 +50,7 @@ class Vistas{
             this.tipo = "joyas";
             this.crearVista();
       }
-
+        
       vistaElectronica(){
             this.tipo = "electronica";
             this.crearVista();
@@ -66,6 +64,7 @@ class Vistas{
             this.sumarCantidad();
             this.eliminarProducto();
             this.borrarCarrito();
+            this.finalizarCompra();
       }
 
       vistaLogin(){
@@ -114,39 +113,63 @@ class Vistas{
                   let producto_copia = new Producto(producto.id,producto.nombre,producto.imagen,producto.categoria,producto.descripcion,producto.precio,producto.votos,producto.rating)
                   producto_copia.talla = talla;
                   producto_copia.cantidad = parseFloat(cantidad);
-                  this.carrito.añadirProducto(producto_copia);
+                  this.usuario_activo.carrito.añadirProducto(producto_copia);
+                  this.actualizarLocalStorageUsuarioActivo();
+                  this.actualizarLocalStorageColecionUsuarios();
             })
       }
 
       convertirProducto(lista_producto){
             let carro = [];
-            this.carrito = new Carro(carro);
-            for(let element of lista_producto){
+            let nuevo_carro = new Carro(carro);
+            console.log(lista_producto.carrito)
+            for(let element of lista_producto.carrito){
                   let producto = new Producto(element.id,element.nombre,element.imagen,element.categoria,element.descripcion,element.precio,element.votos,element.rating,element.cantidad,element.talla);
-                  this.carrito.carrito.push(producto);
+                  nuevo_carro.carrito.push(producto);
             }
+            return nuevo_carro;
       }
 
       convertirUsuarios(lista_usuarios){
-            let collecion_usuarios = [];
-            this.collecion_usuarios = new ColeccionUsuarios(collecion_usuarios);
+            let coleccion_usuarios = [];
+            this.coleccion_usuarios = new ColeccionUsuarios(coleccion_usuarios);
             for(let element of lista_usuarios){
-                  let usuario = new Usuario(element.nombre_usuario,element.contraseña,element.nombre,element.apellidos,element.correo,element.telefono);
-                  this.collecion_usuarios.usuarios.push(usuario);
+                  let usuario = undefined
+                  if(!element.carrito){
+                        usuario = new Usuario(element.nombre_usuario,element.contraseña,element.nombre,element.apellidos,element.correo,element.telefono)
+                  }else{
+                        let carrito = new Carro(element.carrito.carrito,element.carrito.subtotal,element.carrito.gastos_envio,element.carrito.total,)
+                        usuario = new Usuario(element.nombre_usuario,element.contraseña,element.nombre,element.apellidos,element.correo,element.telefono,carrito);
+                  }
+                  this.coleccion_usuarios.usuarios.push(usuario);
+            }
+            this.actualizarLocalStorageColecionUsuarios();
+      }
+
+      convertirUsuario(datos_usuario_activo){
+            for(let element of this.coleccion_usuarios.usuarios){
+                  if(element.nombre_usuario == datos_usuario_activo.nombre_usuario && element.contraseña == datos_usuario_activo.contraseña){
+                        let usuario = element;
+                        this.usuario_activo = usuario;
+                  }
             }
       }
 
       restarCantidad(){
             $(".cantidad-producto-carrito-menos").click((e) => {
-                  this.carrito.añadirProducto(this.crearProductoIdTalla(e),"-");
+                  this.usuario_activo.carrito.añadirProducto(this.crearProductoIdTalla(e),"-");
                   this.vistaCarrito();
+                  this.actualizarLocalStorageUsuarioActivo();
+                  this.actualizarColeccionUsuario();
             })
       }
 
       sumarCantidad(){
             $(".cantidad-producto-carrito-mas").click((e) => {
-                  this.carrito.añadirProducto(this.crearProductoIdTalla(e),"+");
+                  this.usuario_activo.carrito.añadirProducto(this.crearProductoIdTalla(e),"+");
                   this.vistaCarrito();
+                  this.actualizarLocalStorageUsuarioActivo();
+                  this.actualizarColeccionUsuario();
             })
       }
 
@@ -156,15 +179,28 @@ class Vistas{
                   let talla = e.currentTarget.parentElement.parentElement.previousElementSibling.previousElementSibling.previousElementSibling.value;
                   let producto = new Producto(id);
                   producto.talla = talla;
-                  this.carrito.eliminarProducto(producto);
+                  this.usuario_activo.carrito.eliminarProducto(producto);
                   this.vistaCarrito();
+                  this.actualizarLocalStorageUsuarioActivo();
+                  this.actualizarColeccionUsuario();
             })
       }
 
       borrarCarrito(){
             $(".borrar-carrito").click((e) => {
-                  this.carrito.borrarCarrito()
+                  this.usuario_activo.carrito.borrarCarrito()
                   this.vistaCarrito();
+                  this.actualizarLocalStorageUsuarioActivo();
+                  this.actualizarColeccionUsuario();
+            })
+      }
+
+      finalizarCompra(){
+            $(".finalizar-compra").click(() => {
+                  this.enviarCorreoCompra();
+                  this.usuario_activo.carrito = new Carro([]);
+                  this.actualizarLocalStorageUsuarioActivo();
+                  this.actualizarColeccionUsuario();
             })
       }
 
@@ -205,10 +241,13 @@ class Vistas{
                   e.preventDefault()
                   let datos_usuario = this.buscarDatosUsuario();
                   let usuario = new Usuario(datos_usuario[0],datos_usuario[1],datos_usuario[2],datos_usuario[3],datos_usuario[4],datos_usuario[5]);
-                  if(this.collecion_usuarios.añadirUsuario(usuario)){
-                        //mostrar en la pagina que el registro se ha hecho corectamente
+                  if(this.coleccion_usuarios.añadirUsuario(usuario)){
+                        this.enviarCorreoRegistro(datos_usuario[0],datos_usuario[2],datos_usuario[3],datos_usuario[5],datos_usuario[4]);
                   }
+                  this.borrarDatosFormularioRegistrar();
+                  
             })
+            
       }
 
       buscarDatosUsuario(){
@@ -218,7 +257,91 @@ class Vistas{
       }
 
       iniciarUsuario(){
+            $("#iniciar-sesion").click((e) => {
+                  e.preventDefault()
+                  for(let element of this.coleccion_usuarios.usuarios){
+                        if(element.nombre_usuario == $(".usuario").val() && element.contraseña == $(".contraseña").val()){
+                              if(element.carrito == null){
+                                    let carro = [];
+                                    let carrito = new Carro(carro);
+                                    element.carrito = carrito;
+                              }else{
+                                    element.carrito = this.convertirProducto(element.carrito);
+                              }
+                              this.usuario_activo = element;
+                              localStorage.usuario_activo = JSON.stringify(this.usuario_activo);
+                              this.actualizarColeccionUsuario();
+                        }
+                  }
+                  this.borrarDatosFormularioIniciar();
+            })
+      }
 
+      borrarDatosFormularioRegistrar(){
+            $(".usuario").val("");
+            $(".nombre").val("");
+            $(".apellidos").val("");
+            $(".telefono").val("");
+            $(".correo").val("");
+            $(".contraseña").val("");
+            $(".repetir-contraseña").val("");
+      };
+
+      borrarDatosFormularioIniciar(){
+            $(".usuario").val("");
+            $(".contraseña").val("");
+      }
+
+      actualizarColeccionUsuario(){
+            for(let element of this.coleccion_usuarios.usuarios){
+                  if(element.nombre_usuario == this.usuario_activo.nombre_usuario && element.contraseña == this.usuario_activo.contraseña){
+                        let nuevo_carro = new Carro(this.usuario_activo.carrito.carrito,this.usuario_activo.carrito.subtotal,this.usuario_activo.carrito.gastos_envio,this.usuario_activo.carrito.total)
+                        element.carrito = nuevo_carro;
+                  }
+            }
+            this.actualizarLocalStorageColecionUsuarios();
+      }
+
+      actualizarLocalStorageColecionUsuarios(){
+            localStorage.usuarios = JSON.stringify(this.coleccion_usuarios.usuarios);
+      }
+
+      actualizarLocalStorageUsuarioActivo(){
+            localStorage.usuario_activo = JSON.stringify(this.usuario_activo);
+      }
+
+      enviarCorreoRegistro(usuario,nombre,apellidos,telefono,correo){
+            emailjs.send( "service_t65mkzj" , "template_3rx3qj6" , {
+                  from_name : " Boom " ,
+                  nombre : nombre ,
+                  apellidos : apellidos ,
+                  telefono : telefono ,
+                  nombre_usuario : usuario ,
+                  email : correo,
+            }).then(() => {
+                        alert('Enviado');
+                  },(err) => {
+                        alert(JSON.stringify(err));
+                  });
+      }
+
+      enviarCorreoCompra(){
+            let coleccion_productos = [];
+            for(let producto of this.usuario_activo.carrito.carrito){
+                  coleccion_productos.push(producto);
+            }
+            emailjs.send( "service_t65mkzj" , "template_3rx3qj6" , {
+                  from_name : " Boom " ,
+                  nombre : nombre ,
+                  apellidos : apellidos ,
+                  telefono : telefono ,
+                  nombre_usuario : usuario ,
+                  email : correo,
+            }).then(() => {
+                        alert('Enviado');
+                  },(err) => {
+                        alert(JSON.stringify(err));
+                  });
       }
 
       //carrusel
@@ -257,10 +380,8 @@ class Vistas{
       crearVistaPrincipal(){
             this.vista = $(`
             <section class='vistas principal'>
-
                   <!-- banner -->
                   <section class='secciones banner'>
-
                         <!-- publicidad -->
                         <aside class='publicidad hover'>
                               <img src='https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/223-gbl-hbcamp-pr-3000x2000-3-1666272102.jpg?crop=1xw:1xh;center,top&resize=980:*' alt='publicidad fila'>
@@ -268,22 +389,18 @@ class Vistas{
                         
                         <!-- eslogan -->
                         <h1 class='eslogan'>La sencillez es belleza</h1>
-
                         
                         <!-- publicidad -->
                         <aside class='publicidad hover'>
                               <img src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFxHfKMZ190jPYD2nxUemMrje282BUJMvEyg&usqp=CAU' alt='publicidad'>
                         </aside>
                   </section>
-
                   <!-- carrusel -->
                   <section class='secciones carrusel'>
                         <img id='imagen-carrusel' src='https://www.instyle.es/medio/2019/03/22/zara-portada_55b4b3ae_1200x630.jpg' alt='imagen carrusel'>
                   </section>
-
                   <!-- sigenos -->
                   <section class='secciones siguenos'>
-
                         <!-- galeria de imagenes -->
                         <img class='imagenes-siguenos' src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3esAlqowW_163F0QHtcc2g86xlUD2ffg0WA&usqp=CAU' alt='imagenes-siguenos'>
                         <img class='imagenes-siguenos' src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS0w0MMc3DQGRrvc-05oa0vQ8X6EhEtjax5Ww&usqp=CAU' alt='imagenes-siguenos'>
@@ -301,7 +418,6 @@ class Vistas{
                               </div>
                         </div>
                   </section>
-
                   <!-- subcripccion -->
                   <section class='secciones subcripcion'>
                         <div class='contenedor-subcripcion'>
@@ -366,7 +482,7 @@ class Vistas{
                         <h3 class="categoria-producto-unico">${producto.categoria}</h3>
                         <p class="descripcion-producto-unico">${producto.descripcion}</p>
                         <p class="precio-producto-unico">${producto.precio}</p>
-                        <div class="rating-producto-unico">${producto.votos}${producto.rating}</div>
+                        <div class="rating-producto-unico">Votos: ${producto.votos} Rating: ${producto.rating}</div>
                         <div class="caracteristicas-producto-unico">
                               <div class="contenendor-cantidad-producto-unico">
                                     <span>Cantidad: </span>
@@ -396,67 +512,70 @@ class Vistas{
       }
 
       crearVistaCarrito(){
-            if(this.carrito.carrito.length != 0){
-                  this.vista = `
-                  <section class="contenedor-carrito">
-                        <div class="carrito-titulo">
-                              <h1>Su Carrito</h1>
-                        </div>
-                        <div class="carrito-contenido">
-                  <section class="contenedor-productos-carrito">
-                  `
-      
-                  for(let element of this.carrito.carrito){
-                        this.vista += 
-                        `
-                        <div class="producto-carrito">
-                              <input type="hidden" class="id-producto-carrito" value="${element.talla}">
-                              <input type="hidden" class="id-producto-carrito" value="${element.id}">
-                              <div class="contenedor-imagen-producto-carrito">
-                                    <img class="imagen-producto-carrito" src="${element.imagen}" alt="${element.nombre}">
-                              </div>
-                              <div class="contenedor-informacion-producto-carrito">
-                                    <h1 class="nombre-producto-carrito titulo">${element.nombre} (${element.talla})</h1>
-                                    <div class="contenedor-imagen-eliminar hover">
-                                          <img class="imagen-eliminar" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Red_X.svg/1024px-Red_X.svg.png" alt="eliminar producto">
-                                    </div>
-                                    <span class="cantidad-producto-carrito-menos">-</span><span class="cantidad-producto-carrito-numero">${element.cantidad}</span><span class="cantidad-producto-carrito-mas">+</span>
-                                    <span class="precio-producto-carrito">${element.precio} €</span>
-                              </div>
-                        </div>
-                        `
-                  }
-      
-                  this.vista +=
-                  `
-                        </section>
-                        <section class="contenedor-informacion-carrito">
-                              <div class="precio-carrito">
-                                    <div class="suma-carrito">
-                                          <section class="subtotal-carrito-contenedor">
-                                                <span class="subtotal">Subtotal</span>
-                                                <span class="euro">${this.carrito.subtotal}€</span>
-                                          </section>
-                                          <section class="gastos-carrito-contenedor">
-                                                <span class="gastos">Gastos</span>
-                                                <span class="euro">${this.carrito.gastos_envio}€</span>
-                                          </section>
-                                    </div>
-                                    <div class="total-carrito-contenedor">
-                                          <span class="total">Total</span>
-                                          <span class="euro">${this.carrito.total}€</span>
-                                    </div>
-                              </div>
-                              <div class="opciones-carrito">
-                                    <button class="finalizar-compra">Finalizar Pedido</button>
-                                    <button class="borrar-carrito">Borrar carrito</button>
-                              </div>
-                        </section>
-                  `
+            if(this.usuario_activo == null){
+                  this.vista = "<h1>Necesitas inicar sesion para tener un carrito</h1>"
             }else{
-                  this.vista = `<h1>Tu carrito está vacío</h1>`
-            }
+                  if(this.usuario_activo.carrito.carrito.length != 0){
+                        this.vista = `
+                        <section class="contenedor-carrito">
+                              <div class="carrito-titulo">
+                                    <h1>Su Carrito</h1>
+                              </div>
+                              <div class="carrito-contenido">
+                        <section class="contenedor-productos-carrito">
+                        `
             
+                        for(let element of this.usuario_activo.carrito.carrito){
+                              this.vista += 
+                              `
+                              <div class="producto-carrito">
+                                    <input type="hidden" class="id-producto-carrito" value="${element.talla}">
+                                    <input type="hidden" class="id-producto-carrito" value="${element.id}">
+                                    <div class="contenedor-imagen-producto-carrito">
+                                          <img class="imagen-producto-carrito" src="${element.imagen}" alt="${element.nombre}">
+                                    </div>
+                                    <div class="contenedor-informacion-producto-carrito">
+                                          <h1 class="nombre-producto-carrito titulo">${element.nombre} (${element.talla})</h1>
+                                          <div class="contenedor-imagen-eliminar hover">
+                                                <img class="imagen-eliminar" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Red_X.svg/1024px-Red_X.svg.png" alt="eliminar producto">
+                                          </div>
+                                          <span class="cantidad-producto-carrito-menos">-</span><span class="cantidad-producto-carrito-numero">${element.cantidad}</span><span class="cantidad-producto-carrito-mas">+</span>
+                                          <span class="precio-producto-carrito">${element.precio} €</span>
+                                    </div>
+                              </div>
+                              `
+                        }
+            
+                        this.vista +=
+                        `
+                              </section>
+                              <section class="contenedor-informacion-carrito">
+                                    <div class="precio-carrito">
+                                          <div class="suma-carrito">
+                                                <section class="subtotal-carrito-contenedor">
+                                                      <span class="subtotal">Subtotal</span>
+                                                      <span class="euro">${this.usuario_activo.carrito.subtotal}€</span>
+                                                </section>
+                                                <section class="gastos-carrito-contenedor">
+                                                      <span class="gastos">Gastos</span>
+                                                      <span class="euro">${this.usuario_activo.carrito.gastos_envio}€</span>
+                                                </section>
+                                          </div>
+                                          <div class="total-carrito-contenedor">
+                                                <span class="total">Total</span>
+                                                <span class="euro">${this.usuario_activo.carrito.total}€</span>
+                                          </div>
+                                    </div>
+                                    <div class="opciones-carrito">
+                                          <button class="finalizar-compra">Finalizar Pedido</button>
+                                          <button class="borrar-carrito">Borrar carrito</button>
+                                    </div>
+                              </section>
+                        `
+                  }else{
+                        this.vista = `<h1>Tu carrito está vacío</h1>`
+                  }
+            }
       }
 
       crearVistaLogin(){
@@ -586,6 +705,6 @@ class Vistas{
             }else if(this.http.readyState != 4){
                   this.vistaCargando();
             }
-      }    
+      }        
 }
 export {Vistas}

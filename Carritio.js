@@ -1,10 +1,17 @@
 class Carro{
 
-      constructor(carrito){
+      constructor(carrito, subtotal = null, gastos_envio = null, total = null){
             this.carrito = carrito;
-            this.subtotal = 0;
-            this.gastos_envio = 4.99;
-            this.total = 0;
+            if(subtotal == null){
+                  this.subtotal = 0;
+                  this.gastos_envio = 4.99;
+                  this.total = 0;
+            }else{
+                  this.subtotal = subtotal;
+                  this.gastos_envio = gastos_envio;
+                  this.total = total;
+            }
+
       }
 
       añadirProducto(producto,modificar = null){
@@ -13,7 +20,6 @@ class Carro{
             }
             this.comprobarCantidad();
             this.calcularTotal();
-            this.actualizarLocalStorage();
       }
 
       recorerCarrito(producto,modificar){
@@ -51,7 +57,6 @@ class Carro{
             }
             this.carrito = lista_mutable;
             this.calcularTotal();
-            this.actualizarLocalStorage();
       }
 
       calcularTotal(){
@@ -68,12 +73,11 @@ class Carro{
 
       borrarCarrito(){
             this.carrito = [];
-            this.actualizarLocalStorage();
+            this.subtotal = 0;
+            this.total = 0;
       }
 
-      actualizarLocalStorage(){
-            localStorage.carrito = JSON.stringify(this.carrito);
-      }
+
 }
 
 export {Carro}

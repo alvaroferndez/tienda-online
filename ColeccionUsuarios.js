@@ -1,4 +1,3 @@
-import { Usuario } from "./usuario.js"
 class ColeccionUsuarios{
 
       constructor(usuarios){

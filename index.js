@@ -25,9 +25,6 @@ function iniciar(vista){
       document.getElementById("carrito").addEventListener("click", () => {
             vista.vistaCarrito();
       });
-      // document.getElementsByClassName("producto")[0].addEventListener("click", () => {
-      //       vista.vistaProducto();
-      // });
       document.getElementById("inicio-sesion").addEventListener("click", () => {
             vista.vistaLogin();
       });
