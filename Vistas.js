@@ -3,6 +3,8 @@ import {Producto} from "./Producto.js";
 import {Usuario} from "./usuario.js";
 import {ColeccionUsuarios} from "./ColeccionUsuarios.js";
 
+//que salte la animacion de usuario registrado e iniciado
+
 class Vistas{
 
       constructor() {
@@ -116,7 +118,15 @@ class Vistas{
                   this.usuario_activo.carrito.añadirProducto(producto_copia);
                   this.actualizarLocalStorageUsuarioActivo();
                   this.actualizarLocalStorageColecionUsuarios();
+                  this.alertaProductoAñadido();
             })
+      }
+
+      alertaProductoAñadido(){
+            let alerta = "<div class='evento-realizado'><div class='producto-append'><p>Producto añadido al carrito</p></div></div>"
+            this.main.append(alerta);
+            let contenedor = $(".evento-realizado");
+            setTimeout(() => {contenedor.remove()},3000)
       }
 
       convertirProducto(lista_producto){
@@ -201,7 +211,15 @@ class Vistas{
                   this.usuario_activo.carrito = new Carro([]);
                   this.actualizarLocalStorageUsuarioActivo();
                   this.actualizarColeccionUsuario();
+                  this.alertaFinalizarCompra();
             })
+      }
+
+      alertaFinalizarCompra(){
+            let alerta = "<div class='evento-realizado'><div class='producto-append'><p>Compra finalizada</p></div></div>"
+            this.main.append(alerta);
+            let contenedor = $(".evento-realizado");
+            setTimeout(() => {contenedor.remove()},3000)
       }
 
       crearProductoIdTalla(e){
@@ -248,6 +266,13 @@ class Vistas{
                   
             })
             
+      }
+
+      alertaRegistrarUsuario(){
+            let alerta = "<div class='evento-realizado'><div class='producto-append'><p>Usuario Registrado</p></div></div>"
+            this.main.append(alerta);
+            let contenedor = $(".evento-realizado");
+            setTimeout(() => {contenedor.remove()},3000)
       }
 
       buscarDatosUsuario(){
@@ -318,29 +343,34 @@ class Vistas{
                   telefono : telefono ,
                   nombre_usuario : usuario ,
                   email : correo,
-            }).then(() => {
-                        alert('Enviado');
-                  },(err) => {
-                        alert(JSON.stringify(err));
+            }).then(() =>(err) => {
+                        this.errorUsuarioRegistrado();
                   });
+      }
+      
+      errorUsuarioRegistrado(){
+            let alerta = "<div class='evento-realizado'><div class='producto-append'><p>No se ha podido enviar el correo a la direccion</p></div></div>"
+            this.main.append(alerta);
+            let contenedor = $(".evento-realizado");
+            setTimeout(() => {contenedor.remove()},3000)
+
       }
 
       enviarCorreoCompra(){
-            let coleccion_productos = [];
-            for(let producto of this.usuario_activo.carrito.carrito){
-                  coleccion_productos.push(producto);
+            let total_productos = 0;
+            for(let element of this.usuario_activo.carrito.carrito){
+                  total_productos += element.cantidad;
             }
-            emailjs.send( "service_t65mkzj" , "template_3rx3qj6" , {
-                  from_name : " Boom " ,
-                  nombre : nombre ,
-                  apellidos : apellidos ,
-                  telefono : telefono ,
-                  nombre_usuario : usuario ,
-                  email : correo,
-            }).then(() => {
-                        alert('Enviado');
-                  },(err) => {
-                        alert(JSON.stringify(err));
+            emailjs.send("service_t65mkzj","template_ij1hyqf",{
+                  nombre: this.usuario_activo.nombre,
+                  apellidos: this.usuario_activo.apellidos,
+                  subtotal: this.usuario_activo.carrito.subtotal,
+                  gastos: this.usuario_activo.carrito.gastos_envio,
+                  total: this.usuario_activo.carrito.total,
+                  productos: total_productos,
+                  email: this.usuario_activo.correo,
+            }).then(() =>(err) => {
+                        this.errorUsuarioRegistrado();
                   });
       }
 
@@ -409,7 +439,7 @@ class Vistas{
                         <!-- contenido siguenos -->
                         <div class='informacion-siguenos'>
                               <h1 class='titulo-siguenos'>Síguenos</h1>
-                              <p class='contenido-siguenos'>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Velit atque facilis exercitationem laboriosam? Odit et mollitia eum, accusantium necessitatibus fuga velit doloremque voluptate repellendus odio? Eos amet quam natus? Neque.</p>
+                              <p class='contenido-siguenos'>Síguenos en todas nuestras redes sociales para estar informado de la última moda</p>
                               <div class='opciones-pago-footer'>
                                     <a href='https://twitter.com/' target='_blank'><i class='fa-brands fa-twitter hover'></i></a>
                                     <a href='https://youtube.com/' target='_blank'><i class='fa-brands fa-youtube hover'></i></a>
@@ -424,7 +454,7 @@ class Vistas{
                               <h1 id='titulo-subcripcion'>Hazte socio de nuestra marca</h1>
                               <p id='contenido-subcripcion'>Ve a la ultima tendencia con nuestras novedades</p>
                               <input type='email' name='correo-subcripcion' id='correo-subcripcion'>
-                              <button class='subcribirse'>Subcribirse</button>
+                              <button class='subcribirse'><span>Subcribirse</span></button>
                         </div>
                   </section>
             </section>
@@ -513,7 +543,7 @@ class Vistas{
 
       crearVistaCarrito(){
             if(this.usuario_activo == null){
-                  this.vista = "<h1>Necesitas inicar sesion para tener un carrito</h1>"
+                  this.vista = "<div class='carrito-nulo'><h1>Necesitas inicar sesion para tener un carrito</h1></div>"
             }else{
                   if(this.usuario_activo.carrito.carrito.length != 0){
                         this.vista = `
@@ -573,7 +603,7 @@ class Vistas{
                               </section>
                         `
                   }else{
-                        this.vista = `<h1>Tu carrito está vacío</h1>`
+                        this.vista = `<div class="carrito-nulo"><h1>Tu carrito está vacío</h1></div>`
                   }
             }
       }
@@ -585,9 +615,9 @@ class Vistas{
                   <section class="iniciar">
                         <h1 class="titulo-inicio titulo">Inicio de sesión</h1>
                         <form action="">
-                              <input type="text" class="usuario" placeholder="escriba su usuario">
-                              <input type="password" class="contraseña" placeholder="escriba su contraseña">
-                              <input type="submit" class="subcribirse" id="iniciar-sesion">
+                              <input type="text" class="usuario" pattern="[a-záéíóúñA-ZÁÉÚÍÓÑ0-9]{2,25}" placeholder="escriba su usuario" required>
+                              <input type="password" class="contraseña" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" placeholder="escriba su contraseña" required>
+                              <input type="submit" class="subcribirse" id="iniciar-sesion" value="iniciar sesión">
                         </form>
                   </section>
                   <section class="registrarse">
@@ -612,14 +642,14 @@ class Vistas{
                         <section class="registrarse">
                               <h1 class="titulo-inicio titulo">Registrarse</h1>
                               <form action="">
-                                    <input type="text" class="usuario" placeholder="escriba su usuario">
-                                    <input type="text" class="nombre" placeholder="escriba su nombre">
-                                    <input type="text" class="apellidos" placeholder="escriba sus apellidos">
-                                    <input type="tel" class="telefono" placeholder="escriba su telefono">
-                                    <input type="email" class="correo" placeholder="escriba su correo">
-                                    <input type="password" class="contraseña" placeholder="escriba su contraseña">
-                                    <input type="password" class="repetir-contraseña" placeholder="repita su contraseña">
-                                    <input type="submit" class="subcribirse" id="registrarse">
+                                    <input type="text" class="usuario" placeholder="escriba su usuario" pattern="[a-záéíóúñA-ZÁÉÚÍÓÑ0-9]{2,25}" required>
+                                    <input type="text" class="nombre" placeholder="escriba su nombre" pattern="[a-záéíóúñA-ZÁÉÚÍÓÑ0-9]{2,25}" required>
+                                    <input type="text" class="apellidos" placeholder="escriba sus apellidos" pattern="[a-záéíóúñA-ZÁÉÚÍÓÑ0-9]{2,25}[a-záéíóúñA-ZÁÉÚÍÓÑ0-9]{2,25}" required>
+                                    <input type="tel" class="telefono" placeholder="escriba su telefono" pattern="[0-9]{9}" required>
+                                    <input type="email" class="correo" placeholder="escriba su correo" required>
+                                    <input type="password" class="contraseña" placeholder="escriba su contraseña" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" required>
+                                    <input type="password" class="repetir-contraseña" placeholder="repita su contraseña" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" required>
+                                    <input type="submit" class="subcribirse" id="registrarse" value="registrarse">
                               </form>
                         </section>
                   </section>
