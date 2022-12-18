@@ -1198,6 +1198,7 @@ footer>*{
       /*eslogan   banner 2/3*/
       .eslogan{
             /*disposicion*/
+            grid-column: 4 / 11;
             grid-row: 3 / 5;
       }
 
