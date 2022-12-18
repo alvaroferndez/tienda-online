@@ -343,7 +343,9 @@ class Vistas{
                   telefono : telefono ,
                   nombre_usuario : usuario ,
                   email : correo,
-            }).then(() =>(err) => {
+            }).then(() =>() => {
+                        this.alertaRegistrarUsuario();
+                  },(err) => {
                         this.errorUsuarioRegistrado();
                   });
       }

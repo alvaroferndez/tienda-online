@@ -113,7 +113,7 @@ body{
       /*disposicion*/
       display: grid;
       grid-template-columns: 1fr;
-      grid-template-rows: min-content minmax(57vh, max-content) min-content;
+      grid-template-rows: min-content minmax(57vh, min-content) min-content;
 }
 
 /* ---------------------------------------------------------------------------- */
@@ -141,8 +141,73 @@ header>*{
       grid-row: 2 / 4;
 }
 
+/*menu hamburguesa*/
+.menu-hamburguesa{
+      /*disposicion*/
+      grid-row: 2 / -1;
+      grid-column: 3 / 5;
+      display: none;
+}
+
+#enlace-secciones-hamburguesa,.opciones-usuario-hamburguesa,#circulo{
+      display: none;
+}
+
+#circulo{
+      /*tamaño*/
+      width: 50px;
+      height: 50px;
+
+      /*disposicion*/
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+
+      /*decoracion*/
+      clip-path: circle();
+      background-color: white;
+}
+
+.linea{
+      /*tamaño*/
+      height: 5px;
+      width: 30px;
+
+      /*decoracion*/
+      background-color: black;
+      border-radius: 5px;
+      margin: 2px;
+      transition: all 1.5s;
+}
+
+.linea_abierta{
+      height: 5px;
+      width: 30px;
+      margin: 0;
+      border-radius: 5px;
+      background-color: black;
+}
+
+.linea_abierta:nth-child(3){
+      transform:rotate(675deg) ;
+      transition: all 1.5s;
+}
+
+.linea_abierta:nth-child(2){
+      display: none;
+}
+
+.linea_abierta:nth-child(1){
+      transform: translateY(5px) rotate(-675deg) ;
+      transition: all 1.5s;
+}  
+
+
 /*contenedor-logo   header 1/3*/
 .contenedor-logo{
+      /*disposicion*/
+      grid-column: 1 / 2;
+
       /*decoracion*/
       cursor: pointer;
 }
@@ -169,6 +234,19 @@ header>*{
 #enlace-secciones>li{
       /*decoracion*/
       font-size: large;
+}
+
+/*enlace secciones del menu hamburguesa*/
+#enlace-secciones-hamburguesa{
+      /*disposicion*/
+      flex-direction: column;
+      align-content: center;
+      justify-content: center;
+      text-align: center;
+}
+
+#enlace-secciones-hamburguesa>*{
+      margin-top: 10%;
 }
 
 /*opciones usuario   header 3/3*/
@@ -214,6 +292,27 @@ header>*{
       scale: 3;
       transform: rotateX(360deg);
       transition: all 1s;
+}
+
+/* opciones usuario hamburguesa*/
+.opciones-usuario-hamburguesa{
+      /*disposicion*/
+      height: 100%;
+      width: 100%;
+      flex-direction: column;
+      align-content: center;
+      justify-content: center;
+}
+
+#inicio-sesion-hamburguesa{
+      height: 40%;
+      margin-top: 5%;
+      align-self: center;
+}
+
+#carrito-hamburguesa{
+      height: 40%;
+      align-self: center;
 }
 
 /* ---------------------------------------------------------------------------- */
@@ -376,6 +475,7 @@ main{
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      text-align: center;
 }
 
 .contenedor-subcripcion>*{
@@ -1043,6 +1143,98 @@ footer>*{
             grid-column: 2 / 5;
             grid-row: 3 / -1;
       }
+
+      /*productos*/
+      .productos{
+            /*disposicion*/
+            grid-template-columns: repeat(2, 1fr);
+      }
+}
+
+@media (max-width: 650px){
+      /*contenedor-logo   header 1/3*/
+      .contenedor-logo{
+            /*disposicion*/
+            grid-column: 1 / 3;
+            grid-row: 2 / 3;
+      }
+
+      /*menu hamburgesa*/
+      .menu-hamburguesa{
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: 30% 70%;
+            justify-self: center;
+            align-items: center;
+            justify-items: center;
+      }
       
+      #circulo{
+            grid-column: 1 / -1;
+            grid-row: 1 / 2;
+            display: flex;
+      }
+
+      #enlace-secciones-hamburguesa{
+            grid-column: 1 / 2;
+            grid-row: 2 / 3;
+      }
+
+      .opciones-usuario-hamburguesa{
+            grid-column: 2 / -1;
+            grid-row: 2 / -1;
+      }
+
+      #enlace-secciones,.opciones-usuario{
+            display: none;
+      }
+
+      /*vista principal*/
+      /*banner*/
+      .banner{
+            /*disposicion*/
+            grid-template-rows: repeat(4,1fr);
+      }
+      /*eslogan   banner 2/3*/
+      .eslogan{
+            /*disposicion*/
+            grid-row: 3 / 5;
+      }
+
+      /*publicidad   banner 1/3 3/3*/
+      .publicidad{
+            grid-row: 2 / 3;
+      }
+
+      /*carrusel*/
+      .carrusel{
+            height: 40vh;
+      }
+
+      /*siguenos*/
+      .siguenos{
+            /*disposicion*/
+            grid-template-columns: repeat(5,1fr);
+            grid-template-rows: repeat(3,1fr);
+      }
       
+      .imagenes-siguenos:nth-child(1),.imagenes-siguenos:nth-child(2),.imagenes-siguenos:nth-child(3){
+            grid-row: 1 / 2;
+      }
+      
+      .informacion-siguenos{
+            grid-row: 2 / -1;
+      }
+
+      /*productos*/
+      .productos{
+            /*disposicion*/
+            grid-template-columns: repeat(1, 1fr);
+      }
+
+      /*login*/
+      .contenedor-login{
+            grid-auto-flow:unset;
+            grid-template-columns: 1fr;
+      }
 }
