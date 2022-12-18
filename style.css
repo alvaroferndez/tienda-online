@@ -697,7 +697,7 @@ main{
       /*disposicion*/
       display: grid;
       grid-template-columns: repeat(2,1fr);
-      grid-template-rows: repeat(5,1fr) 5vh;
+      grid-template-rows: repeat(5,min-content) 5vh;
 }
 
 /*nombre producto*/
@@ -706,6 +706,7 @@ main{
       grid-column: 1 / -1;
       grid-row: 1 / 2;
       justify-self: center;
+      text-align: center;
 }
 
 /*imagen producto unico*/
@@ -779,6 +780,9 @@ main{
       box-shadow: rgba(213, 217, 217, .5) 0 2px 5px 0;
       box-sizing: border-box;
       cursor: pointer;
+
+      /*margenes*/
+      margin-top: 5%;
       
       /*transiciones*/
       transition: all .2s;
@@ -1231,6 +1235,47 @@ footer>*{
       .productos{
             /*disposicion*/
             grid-template-columns: repeat(1, 1fr);
+      }
+
+      /*cabecera*/
+      .cabecera{
+            /*disposicion*/
+            display: grid;
+            grid-template-columns: repeat(5,1fr);
+            grid-template-rows: repeat(2,1fr);
+      }
+      
+      .titulo-seccion{
+            /*disposicion*/
+            grid-row: 1 / 2;
+            grid-column: 2 / 5;
+      }
+      
+      .ascendente{
+      
+            /*disposicion*/
+            grid-column: 2 / 3;
+            grid-row: 2 / -1;
+      }
+      
+      .descendente{
+      
+            /*disposicion*/
+            grid-column: 4 / 5;
+            grid-row: 2 / -1;
+      }
+
+      /*carrito*/
+      .carrito-contenido{
+            /*disposicion*/
+            grid-template-columns: none;
+            grid-template-rows: min-content min-content;
+      }
+
+      .producto-carrito{
+            /*disposicion*/
+            grid-template-columns: none;
+            grid-template-rows: 2fr 1fr;
       }
 
       /*login*/
