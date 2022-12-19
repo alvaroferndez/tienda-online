@@ -343,7 +343,7 @@ class Vistas{
                   telefono : telefono ,
                   nombre_usuario : usuario ,
                   email : correo,
-            }).then(() =>() => {
+            }).then(() => {
                         this.alertaRegistrarUsuario();
                   },(err) => {
                         this.errorUsuarioRegistrado();
@@ -371,8 +371,8 @@ class Vistas{
                   total: this.usuario_activo.carrito.total,
                   productos: total_productos,
                   email: this.usuario_activo.correo,
-            }).then(() =>(err) => {
-                        this.errorUsuarioRegistrado();
+            }).then(() =>{
+                        this.vistaCarrito();
                   });
       }
 
